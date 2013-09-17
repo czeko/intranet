@@ -1,6 +1,5 @@
 {% extends "templates/_base.html" %}
 
-
 {% macro user_info(user, counter, is_client=False) %}
     <tr>
         <td class="counter">{{ counter }}</td>
@@ -44,42 +43,113 @@
 {% endmacro %}
 
 {% block content %}
-<div>
-    <div class="tabs">
-        <ul class="nav nav-tabs">
-            <li class="title">{% trans %}Employees{% endtrans %}</li>
-        </ul>
-    </div>
-
-    <table class="table table-bordered table-hover user-list width_auto">
-        <thead>
-            <th class="lp">&nbsp;</th>
-            <th class="avatar">&nbsp;</th>
-            <th class="name">
-                {% trans %}Employee's name{% endtrans %}
-            </th>
-            <th class="contact">{% trans %}Contact{% endtrans %}</th>
-            <th class="role">{% trans %}Role{% endtrans %}</th>
-            <th class="calendars">{% trans %}Calendars{% endtrans %}</th>
-            <th>{% trans %}Start work{% endtrans %}</th>
-        </thead>
-        <tbody>
-            {% for user in users %}
-                {{ user_info(user, loop.index) }}
-            {% endfor %}
-            <thead><th colspan="7">{% trans %}Freelancers{% endtrans %}</th></thead>
-            {% set counter = users|length %}
-            {% for user in freelancers %}
-                {% set counter = counter + 1 %}
-                {{ user_info(user, counter) }}
-            {% endfor %}
-            {% if clients %}
-                <thead><th colspan="7">{% trans %}Clients{% endtrans %}</th></thead>
-                {% for user in clients %}
-                    {{ user_info(user, loop.index, is_client=True) }}
+<div class="tabs">
+    <ul class="nav nav-tabs">
+       <li class="active"><a href="#employees" data-toggle="tab">{% trans %}Employees{% endtrans %}</a></li>
+        <li class=""><a href="#freelances" data-toggle="tab">{% trans %}Freelancers{% endtrans %}</a></li>
+        {% if request.has_perm('admin') %}
+        <li class=""><a href="#clients" data-toggle="tab">{% trans %}Clients{% endtrans %}</a></li>
+        <li class=""><a href="#inactive" data-toggle="tab">{% trans %}Inactive{% endtrans %}</a></li>
+        {% endif %}
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="employees">
+            {% if not users %}
+            There is no users
+            {% else %}
+          <table class="table table-bordered table-hover user-list width_auto">
+            <thead>
+                <th class="lp">&nbsp;</th>
+                <th class="avatar">&nbsp;</th>
+                <th class="name">
+                    {% trans %}Employee's name{% endtrans %}
+                </th>
+                <th class="contact">{% trans %}Contact{% endtrans %}</th>
+                <th class="role">{% trans %}Role{% endtrans %}</th>
+                <th class="calendars">{% trans %}Calendars{% endtrans %}</th>
+                <th>{% trans %}Start work{% endtrans %}</th>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    {{ user_info(user, loop.index) }}
                 {% endfor %}
+            </tbody>
+         </table>
             {% endif %}
-        </tbody>
-    </table>
+        </div>
+        <div class="tab-pane fade" id="freelances">
+            {% if not freelancers %}
+            There is no users
+            {% else %}
+          <table class="table table-bordered table-hover user-list width_auto">
+            <thead>
+                <th class="lp">&nbsp;</th>
+                <th class="avatar">&nbsp;</th>
+                <th class="name">
+                    {% trans %}Freelance's name{% endtrans %}
+                </th>
+                <th class="contact">{% trans %}Contact{% endtrans %}</th>
+                <th class="role">{% trans %}Role{% endtrans %}</th>
+                <th class="calendars">{% trans %}Calendars{% endtrans %}</th>
+                <th>{% trans %}Start work{% endtrans %}</th>
+            </thead>
+            <tbody>
+                {% for user in freelancers %}
+                    {% set counter = counter + 1 %}
+                    {{ user_info(user, counter) }}
+                {% endfor %}
+            </tbody>
+         </table>
+            {% endif %}
+        </div>
+        <div class="tab-pane fade" id="clients">
+            {% if not clients %}
+            There is no users
+            {% else %}
+            <table class="table table-bordered table-hover user-list width_auto">
+            <thead>
+                <th class="lp">&nbsp;</th>
+                <th class="avatar">&nbsp;</th>
+                <th class="name">
+                    {% trans %}Client's name{% endtrans %}
+                </th>
+                <th class="contact">{% trans %}Contact{% endtrans %}</th>
+                <th class="role">{% trans %}Role{% endtrans %}</th>
+                <th class="calendars">{% trans %}Calendars{% endtrans %}</th>
+                <th>{% trans %}Start work{% endtrans %}</th>
+            </thead>
+            <tbody>
+                    {% for user in clients %}
+                        {{ user_info(user, loop.index, is_client=True) }}
+                    {% endfor %}
+            </tbody>
+         </table>
+            {% endif %}
+        </div>
+        <div class="tab-pane fade" id="inactive">
+            {% if not inactive %}
+            There is no users
+            {% else %}
+           <table class="table table-bordered table-hover user-list width_auto">
+            <thead>
+                <th class="lp">&nbsp;</th>
+                <th class="avatar">&nbsp;</th>
+                <th class="name">
+                    {% trans %}User's name{% endtrans %}
+                </th>
+                <th class="contact">{% trans %}Contact{% endtrans %}</th>
+                <th class="role">{% trans %}Role{% endtrans %}</th>
+                <th class="calendars">{% trans %}Calendars{% endtrans %}</th>
+                <th>{% trans %}Start work{% endtrans %}</th>
+            </thead>
+            <tbody>
+                {% for user in inactive %}
+                    {{ user_info(user, loop.index) }}
+                {% endfor %}
+            </tbody>
+         </table>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

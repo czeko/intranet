@@ -30,16 +30,20 @@ class List(BaseView):
         freelancers = [user for user in res if user.freelancer]
 
         clients = []
+        inactive = []
         if self.request.has_perm('admin'):
             clients = User.query.filter(User.is_active==True)\
                                 .filter(User.is_client())\
                                 .order_by(User.name).all()
 
+            inactive = User.query.filter(User.is_active==False)\
+                                .order_by(User.name).all()
 
         return dict(
             users=users,
             freelancers=freelancers,
             clients=clients,
+            inactive=inactive
         )
 
 
