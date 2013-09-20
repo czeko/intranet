@@ -2,6 +2,7 @@
 import os
 import base64
 import mimetypes
+import json
 
 from pyramid.view import view_config
 from pyramid.exceptions import Forbidden
@@ -9,41 +10,78 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 
 from intranet3.utils.views import BaseView
-from intranet3.models import User
+from intranet3.models import User, Team, DBSession
 from intranet3.forms.user import UserEditForm
 from intranet3.log import INFO_LOG
 from intranet3 import helpers as h
 from intranet3.api.preview import Preview
+# from intranet3.forms.user import UserListFilterForm
 
 
 LOG = INFO_LOG(__name__)
 
+class TeamChoices(object):
+    def __iter__(self):
+        teams = DBSession.query(Team.id, Team.name).order_by(Team.name)
+        yield '', u'-- None --'
+        for team in teams:
+            yield str(team.id), team.name
 
 @view_config(route_name='user_list', permission='freelancer')
 class List(BaseView):
+    @classmethod
+    def user_to_json(cls, user):
+        levels_list = [str(users) for users in user.levels_list]
+        return json.dumps(dict(
+            name=user.name,
+            groups=levels_list + user.groups,
+            location=user.location,
+            start_work=user.start_work.strftime('%d/%m/%Y') if user.start_work else '',
+            # team=[]
+        ))
     def get(self):
-        res = User.query.filter(User.is_active==True)\
-                          .filter(User.is_not_client())\
-                          .order_by(User.name).all()
+        location= [('poznan', u'Poznań'), ('wroclaw', u'Wrocław')]
+        groups = [
+            (1, 'INTERN'),
+            (2, 'P1'),
+            (4, 'P2'),
+            ('8', 'P3'),
+            ('16', 'P4'),
+            ('32', 'FED'),
+            ('64', 'ADMIN'),
+            ('128', 'Expert zew.'),
+            ('256', 'Android Dev'),
+            ('512', 'Tester'),
+            ('1024', 'CEO\'s Assistant'),
+            ('2048', 'CEO'),
+            ('user', 'user'),
+            ('coordinator', 'coordinator'),
+            ('scrum', 'scrum'),
+            ('cron', 'cron'),
+            ('admin', 'admin'),
+        ]
+        # form = UserListFilterForm()
 
-        users = [user for user in res if not user.freelancer]
-        freelancers = [user for user in res if user.freelancer]
-
+        res = DBSession.query(User).order_by(User.name).all()
+        users = [user for user in res if user.is_active and not user.client and not user.freelancer]
+        freelancers = [user for user in res if user.freelancer and user.is_active]
+        team = self.session.query(Team).all()
         clients = []
         inactive = []
         if self.request.has_perm('admin'):
-            clients = User.query.filter(User.is_active==True)\
-                                .filter(User.is_client())\
-                                .order_by(User.name).all()
+            clients = [user for user in res if user.client and user.is_active]
+            inactive = [user for user in res if not user.is_active]
 
-            inactive = User.query.filter(User.is_active==False)\
-                                .order_by(User.name).all()
 
         return dict(
             users=users,
             freelancers=freelancers,
             clients=clients,
-            inactive=inactive
+            inactive=inactive,
+            user_to_json=self.user_to_json,
+            team=TeamChoices(),
+            locations=location,
+            groups=groups
         )
 
 
