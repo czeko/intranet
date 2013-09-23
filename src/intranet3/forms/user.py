@@ -7,7 +7,6 @@ from wtforms import validators
 from pyramid.i18n import TranslationStringFactory
 
 from intranet3.models.user import levels, User
-from intranet3.models import DBSession, Team
 _ = TranslationStringFactory('intranet3')
 
 class UserEditForm(wtf.Form):
@@ -43,29 +42,4 @@ class UserEditForm(wtf.Form):
 
     groups = wtf.SelectMultipleField(_(u'Groups'), validators=[], choices=(('freelancer','freelancer'),('user','user'),('admin','admin'), ('scrum', 'scrum')))
 
-
-class TeamChoices(object):
-
-    def __iter__(self):
-        teams = DBSession.query(Team.id, Team.name).order_by(Team.name)
-        yield '', u'-- None --'
-        for team in teams:
-            yield str(team.id), team.name
-#
-class GroupChoices(object):
-    def __iter__(self):
-        teams = DBSession.query(Team.id, Team.name).order_by(Team.name)
-        yield '', u'-- None --'
-        for team in teams:
-            yield str(team.id), team.name
-
-# class UserListFilterForm(wtf.Form):
-#     # def __init__(self, *args, **kwargs):
-#     #     super(UserListFilterForm, self).__init__(*args, **kwargs)
-#     #     self.project_id.choices
-#     user_name = wtf.TextField(_(u"Employee's name"), validators=[])
-#     group = wtf.SelectField(_(u'Group'), choices=[], default=10)
-#     location= wtf.TextField(_(u"Location"), validators=[])
-#     start_work = wtf.DateTimeField(_(u"Start date"), format='%d/%m/%Y', validators=[])
-#     team = wtf.SelectField(_(u"Team"), choices=TeamChoices(), validators=[])
 

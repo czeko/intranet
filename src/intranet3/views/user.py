@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import base64
-import mimetypes
 import json
 
 from pyramid.view import view_config
@@ -10,12 +8,10 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.response import Response
 
 from intranet3.utils.views import BaseView
-from intranet3.models import User, Team, DBSession
+from intranet3.models import User, Team, DBSession, TeamMember
 from intranet3.forms.user import UserEditForm
 from intranet3.log import INFO_LOG
-from intranet3 import helpers as h
 from intranet3.api.preview import Preview
-# from intranet3.forms.user import UserListFilterForm
 
 
 LOG = INFO_LOG(__name__)
@@ -23,7 +19,6 @@ LOG = INFO_LOG(__name__)
 class TeamChoices(object):
     def __iter__(self):
         teams = DBSession.query(Team.id, Team.name).order_by(Team.name)
-        yield '', u'-- None --'
         for team in teams:
             yield str(team.id), team.name
 
@@ -32,19 +27,21 @@ class List(BaseView):
     @classmethod
     def user_to_json(cls, user):
         levels_list = [str(users) for users in user.levels_list]
+        teams = DBSession.query(TeamMember).filter(TeamMember.user_id == user.id).all()
         return json.dumps(dict(
             name=user.name,
             groups=levels_list + user.groups,
             location=user.location,
-            start_work=user.start_work.strftime('%d/%m/%Y') if user.start_work else '',
-            # team=[]
+            start_work=user.start_work.strftime('%Y/%m/%d') if user.start_work else '',
+            team=[str(team.team_id) for team in teams]
         ))
+
     def get(self):
         location= [('poznan', u'Poznań'), ('wroclaw', u'Wrocław')]
         groups = [
-            (1, 'INTERN'),
-            (2, 'P1'),
-            (4, 'P2'),
+            ('1', 'INTERN'),
+            ('2', 'P1'),
+            ('4', 'P2'),
             ('8', 'P3'),
             ('16', 'P4'),
             ('32', 'FED'),
@@ -60,18 +57,15 @@ class List(BaseView):
             ('cron', 'cron'),
             ('admin', 'admin'),
         ]
-        # form = UserListFilterForm()
 
         res = DBSession.query(User).order_by(User.name).all()
         users = [user for user in res if user.is_active and not user.client and not user.freelancer]
         freelancers = [user for user in res if user.freelancer and user.is_active]
-        team = self.session.query(Team).all()
         clients = []
         inactive = []
         if self.request.has_perm('admin'):
             clients = [user for user in res if user.client and user.is_active]
             inactive = [user for user in res if not user.is_active]
-
 
         return dict(
             users=users,

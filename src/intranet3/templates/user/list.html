@@ -1,7 +1,7 @@
 {% extends "templates/_base.html" %}
 
-{% macro user_info(user, counter, is_client=False) %}
-<tr data-json="{{ user_to_json(user)}}" xmlns="http://www.w3.org/1999/html">
+{% macro user_info(user, counter, user_json=False, is_client=False) %}
+<tr {% if user_json %} data-json="{{ user_to_json(user)}}" {% endif %} xmlns="http://www.w3.org/1999/html">
         <td class="counter">{{ counter }}</td>
         <td class="email"><img src="{{user.avatar_url}}" alt="{{user.name}} [{{user.email}}]" /></td>
         <td class="name">
@@ -24,6 +24,7 @@
             {% if user.skype %}<label>Skype:</label>{{ user.skype }}<br/>{% endif %}
             {% if user.irc %}<label>IRC:</label>{{ user.irc }}<br/>{% endif %}
         </td>
+        {% if not user.client %}
         <td>
             {% if user.freelancer %}{% trans %}Freelancer{% endtrans %}<br/>{% endif %}
             {% if user.is_programmer %}{% trans %}Programer{% endtrans %}<br/>{% endif %}
@@ -39,29 +40,9 @@
         <td>
             {% if user.start_work %}{{ user.start_work.strftime('%d/%m/%Y') or ''}}{% else %}{% endif %}
         </td>
-    </tr>
+        {% endif %}
+</tr>
 {% endmacro %}
-
-<!--$('input').change(-->
-<!---czy dac zwyklego forma czy uzyc wtf-->
- <!--<form method="get" action='/result'>-->
-    <!--&lt;!&ndash;<div class="search">&ndash;&gt;-->
-            <!--if ((trololo['name'].toLowerCase()).contains(name.toLowerCase())){-->
-                    <!--$($('[data-json]')[i]).show();-->
-                <!--}-->
-                <!--else{-->
-                    <!--$($('[data-json]')[i]).hide();-->
-                <!--}-->
-
-    <!--if ((trololo['start_work'])==start_work){-->
-                    <!--$($('[data-json]')[i]).show();-->
-                <!--}-->
-                <!--else{-->
-                    <!--$($('[data-json]')[i]).hide();-->
-        <!--<input type="text" name='product' value=""/>-->
-    <!--</div>-->
-    <!--<button class="btn_search btn btn-primary" type=submit>Search</button>-->
-<!--</form>-->
 
 {% block content %}
 
@@ -76,10 +57,14 @@
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade in active" id="employees">
-            <div class="filters form_late">
-                 <form>
-                    <div class="search">
-                        Employee's name<input type="text" name='name' value="" autocomplete="on">
+            <div class="span">
+                 <form class="form-horizontal">
+                     <div class="row">
+                        <input type="text" name='name' value="" autocomplete="on" placeholder="Employee's name">
+                        <input type="text" class="datepicker" name='start_work' value="" placeholder="Start work">
+                         </div>
+
+                         <div class="row">
                         Group<select id="group" multiple>
                             {% for group_id, group_name in groups %}
                                 <option value='{{ group_id }}' >{{ group_name }}</option>
@@ -90,24 +75,28 @@
                                 <option value='{{ location_id }}' >{{ location_name }}</option>
                             {% endfor %}
                         </select>
-                        Start work<input type="text" class="datepicker" name='start_work' value="">
-                        Team<select name="team" multiple>
+                        Team<select id="team" multiple>
                             {% for team_id,team_name in team %}
-                                <option name='{{ tem_id }}' value="">{{ team_name }}</option>
+                                <option name='{{ team_id }}' value="{{team_id}}">{{ team_name }}</option>
                             {% endfor %}
                         </select>
 
-                    </div>
-
-                   <div class="buttons">
-                    <input type="button" value="{% trans %}Filter{% endtrans %}" class="button btn btn-primary" />
-                   </div>
+                        <input type="button" value="{% trans %}Filter{% endtrans %}" class="button btn btn-primary" />
+                     </div>
                 </form>
             </div>
+            <table  id='no_result' class="table table-bordered table-hover user-list width_auto hide">
+            <thead>
+                    <th></th>
+            </thead>
+            <tbody>
+                   <td><h2>No result</h2></td>
+            </tbody>
+         </table>
             {% if not users %}
             There is no users
             {% else %}
-          <table class="table table-bordered table-hover user-list width_auto">
+          <table  id='oo' class="table table-bordered table-hover user-list width_auto ">
             <thead>
                 <th class="lp">&nbsp;</th>
                 <th class="avatar">&nbsp;</th>
@@ -121,7 +110,7 @@
             </thead>
             <tbody>
                 {% for user in users %}
-                    {{ user_info(user, loop.index) }}
+                    {{ user_info(user, loop.index, user_json=True) }}
                 {% endfor %}
             </tbody>
          </table>
@@ -136,7 +125,7 @@
                 <th class="lp">&nbsp;</th>
                 <th class="avatar">&nbsp;</th>
                 <th class="name">
-                    {% trans %}Client's name{% endtrans %}
+                    {% trans %}Freelancer's name{% endtrans %}
                 </th>
                 <th class="contact">{% trans %}Contact{% endtrans %}</th>
                 <th class="role">{% trans %}Role{% endtrans %}</th>
@@ -145,7 +134,7 @@
             </thead>
             <tbody>
                     {% for user in freelancers %}
-                        {{ user_info(user, loop.index, is_client=True) }}
+                        {{ user_info(user, loop.index) }}
                     {% endfor %}
             </tbody>
          </table>
@@ -163,9 +152,6 @@
                     {% trans %}Client's name{% endtrans %}
                 </th>
                 <th class="contact">{% trans %}Contact{% endtrans %}</th>
-                <th class="role">{% trans %}Role{% endtrans %}</th>
-                <th class="calendars">{% trans %}Calendars{% endtrans %}</th>
-                <th>{% trans %}Start work{% endtrans %}</th>
             </thead>
             <tbody>
                     {% for user in clients %}
@@ -222,7 +208,7 @@
             return true
         }
         else{
-            if (my_name.contains(name.toLowerCase())){
+            if ((my_name.indexOf(name.toLowerCase())) != -1){
                 return true
             }
             else{
@@ -230,12 +216,12 @@
             }
         }
     }
-    function is_ok_start_work(my_name, name){
-        if (!name){
+    function is_ok_start_work(my_start_work, start_work){
+        if (!start_work){
             return true
         }
         else{
-            if(my_name==name){
+            if(my_start_work < start_work){
                 return true
             }
             else{
@@ -243,12 +229,12 @@
             }
         }
     }
-    function is_ok_location(my_name, name){
-        if (!name){
+    function is_ok_location(my_location, location){
+        if (!location){
             return true
         }
         else{
-            if (name.indexOf(my_name) != -1){
+            if (location.indexOf(my_location) != -1){
                 return true
             }
             else{
@@ -256,12 +242,12 @@
             }
         }
     }
-    function is_ok_group(my_name, name){
-        if (!name){
+    function is_ok_group(my_group, group){
+        if (!group){
             return true
         }
         else{
-            if ((_.intersection(my_name, name)).length != 0){
+            if ((_.intersection(my_group, group)).length == group.length){
                 return true
             }
             else{
@@ -272,24 +258,37 @@
 
     $(document).ready(function() {
         $(".button").click(function(){
-            String.prototype.contains = function(it) { return this.indexOf(it) != -1; };
             var name = $("[name='name']").val();
-            var start_work = $("[name='start_work']").val();
-            var location = searchFlights("location")
-            var group = searchFlights("group")
-            debugger;
+            var start_work =Date.parseExact($("[name='start_work']").val() , "d/M/yyyy");
+            var location = searchFlights("location");
+            var group = searchFlights("group");
+            var team = searchFlights("team");
+            var _show = 0;
             for (var i = 0; i< $('[data-json]').length ; i++){
-                trololo = jQuery.parseJSON($('[data-json]')[i].getAttribute('data-json'));
+                person = jQuery.parseJSON($('[data-json]')[i].getAttribute('data-json'));
 
-                if (is_ok_name((trololo['name'].toLowerCase()),name) &&
-                    is_ok_location(trololo['location'], location) &&
-                    is_ok_start_work(trololo['start_work'], start_work) &&
-                    is_ok_group(trololo['groups'], group)){
+                if (is_ok_name((person['name'].toLowerCase()),name) &&
+                    is_ok_location(person['location'], location) &&
+                    is_ok_start_work(new Date(person['start_work']), start_work) &&
+                    is_ok_group(person['groups'], group) &&
+                    is_ok_group(person['team'], team)){
                         $($('[data-json]')[i]).show();
+                        _show++;
                 }
                 else{
                     $($('[data-json]')[i]).hide();
                 }
+            }
+            if (_show == 0){
+                $('#oo').hide();
+                $('#no_result').removeClass('table table-bordered table-hover user-list width_auto hide')
+                $('#no_result').addClass('table table-bordered table-hover user-list width_auto');
+                $
+            }
+            else{
+                $('#oo').show();
+                $('#no_result').removeClass('table table-bordered table-hover user-list width_auto')
+                $('#no_result').addClass('table table-bordered table-hover user-list width_auto hide');
             }
         });
     });

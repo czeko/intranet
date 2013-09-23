@@ -51,7 +51,7 @@ class User(Base):
     is_frontend_developer = Column(Boolean, default=False, nullable=False)
     is_graphic_designer = Column(Boolean, default=False, nullable=False)
     levels = Column(Integer, nullable=False, default=0)
-    # team_id = Column(Integer, ForeignKey('team.id'), nullable=False, index=True)
+
     availability_link = Column(String, nullable=True, default=None)
     tasks_link = Column(String, nullable=True, default=None)
     skype = Column(String, nullable=True, default=None)
