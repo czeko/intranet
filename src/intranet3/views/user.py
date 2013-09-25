@@ -33,6 +33,7 @@ class List(BaseView):
             groups=levels_list + user.groups,
             location=user.location,
             start_work=user.start_work.strftime('%Y/%m/%d') if user.start_work else '',
+            stop_work=user.stop_work.strftime('%Y/%m/%d') if user.stop_work else '',
             team=[str(team.team_id) for team in teams]
         ))
 
@@ -122,6 +123,7 @@ class Edit(BaseView):
                     user.freelancer = False
                 user.groups = groups
                 user.start_full_time_work = form.start_full_time_work.data or None
+                user.stop_work = form.stop_work.data or None
             user.is_programmer = form.is_programmer.data
             user.is_frontend_developer = form.is_frontend_developer.data
             user.is_graphic_designer = form.is_graphic_designer.data

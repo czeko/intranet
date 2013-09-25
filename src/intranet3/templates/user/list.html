@@ -62,6 +62,7 @@
                      <div class="row">
                         <input type="text" name='name' value="" autocomplete="on" placeholder="Employee's name">
                         <input type="text" class="datepicker" name='start_work' value="" placeholder="Start work">
+                        <input type="text" class="datepicker" name='stop_work' value="" placeholder="Stop work">
                          </div>
 
                          <div class="row">
@@ -259,7 +260,8 @@
     $(document).ready(function() {
         $(".button").click(function(){
             var name = $("[name='name']").val();
-            var start_work =Date.parseExact($("[name='start_work']").val() , "d/M/yyyy");
+            var start_work = Date.parseExact($("[name='start_work']").val() , "d/M/yyyy");
+            var stop_work = Date.parseExact($("[name='stop_work']").val() , "d/M/yyyy");
             var location = searchFlights("location");
             var group = searchFlights("group");
             var team = searchFlights("team");
@@ -270,6 +272,7 @@
                 if (is_ok_name((person['name'].toLowerCase()),name) &&
                     is_ok_location(person['location'], location) &&
                     is_ok_start_work(new Date(person['start_work']), start_work) &&
+                    is_ok_start_work(new Date(person['stop_work']), stop_work) &&
                     is_ok_group(person['groups'], group) &&
                     is_ok_group(person['team'], team)){
                         $($('[data-json]')[i]).show();
