@@ -143,3 +143,19 @@ class Users(ApiView):
             )
 
 
+@view_config(route_name='api_pivot', renderer='json')
+class Pivot(ApiView):
+     def get(self):
+        pivot_q = self.session.query(User)\
+                            .filter(User.is_not_client())\
+                            .order_by(User.name).all()
+
+        return [
+            dict(
+                id=user.id,
+                name=user.name,
+                start=user.start_work and user.start_work.isoformat() or None,
+                end=user.stop_work and user.stop_work.isoformat() or None,
+                roles=user.roles,
+            )for user in pivot_q
+        ]
