@@ -144,24 +144,3 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout) {
       }
     };
 });
-
-App.controller('pivotCtrl', function($scope, $http, $dialog, $timeout) {
-    $scope.search = "";
-
-    $http.get('/api/pivot').success(function(data){
-      $scope.users = data;
-        debugger;
-
-    });
-    $scope.roles = _.map(G.ROLES, function(role){
-      return {id: role[0], name: role[1]};
-    });
-
-    $scope.to_pretty_role = function(role){
-      return _.find(G.ROLES, function(a_role){
-        return a_role[0] === role;
-      })[1];
-    };
-
-
-});

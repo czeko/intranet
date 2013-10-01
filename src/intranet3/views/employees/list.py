@@ -197,53 +197,34 @@ oneday = datetime.timedelta(days=1)
 
 @view_config(route_name='employee_list_pivot')
 class Pivot(ApplyArgsMixin, BaseView):
-    # @staticmethod
-    # def _quarters_sum(v):
-    #     return sum(v[0:3]),sum(v[3:6]),sum(v[6:9]),sum(v[9:12]),
-    #
-    # def _get_month_days(self, start, end):
-    #     """
-    #     calculetes worked days (from begining of month to today, from today to end of month)
-    #     """
-    #     today = datetime.date.today()
-    #     days_worked = h.get_working_days(start, h.previous_day(today))
-    #     days_left = h.get_working_days(today, end)
-    #     return days_worked, days_left
+    @staticmethod
+    def _quarters_sum(v):
+        return sum(v[0:3]), sum(v[3:6]), sum(v[6:9]), sum(v[9:12]), sum(v[12:15]), sum(v[15:18]), sum(v[18:21]), sum(v[21:24])
 
     def get(self):
-        # today = datetime.date.today()
-        # year = self.request.GET.get('year', today.year)
-        # year = int(year)
-        # year_start = datetime.date(year, 1, 1)
-        # year_end = datetime.date(year, 12, 31)
-        # if year == today.year:
-        #     # if this is current year we calculate hours only to yesterday
-        #     year_end = today-oneday
-        #
-        pivot_q = self.session.query(User.id, User.name, User.start_work, User.stop_work, User.roles)\
-                            .filter(User.is_not_client())\
-                            .order_by(User.name)
-        # # import ipdb;ipdb.set_trace()
-        # pivot = {}
-        # for p in pivot_q:
-        #     pivot.setdefault((p.id, p.name, p.color), [0]*12)[p.date.month-1] = int(round(p.time))
-        #
-        # stats_q = self.session.query('date', 'time').from_statement("""
-        # SELECT date_trunc('month', t.date) as date, SUM(t.time) as time
-        # FROM time_entry t
-        # WHERE t.deleted = false
-        # GROUP BY date_trunc('month', t.date)
-        # """)
-        #
-        # role = {}
-        # for s in stats_q:
-        #     role.setdefault(s.date.year, [0]*12)[s.date.month-1] = int(round(s.time))
+        check_role = self.request.GET.get('role')
+        if not check_role or check_role == 'None':
+            pivot_q = self.session.query(User.id, User.name, User.start_work, User.stop_work, User.roles)\
+                                .filter(User.is_not_client())\
+                                .order_by(User.name)
+        else:
+            pivot_q = self.session.query(User.id, User.name, User.start_work, User.stop_work, User.roles)\
+                                .filter(User.is_not_client())\
+                                .filter(User.roles.op('&&')('{%s}'%(check_role)))\
+                                .order_by(User.name)
 
+        users = {}
+        for s in pivot_q:
+            if s.start_work:
+                users.setdefault(s.start_work.year, [0]*24)[s.start_work.month-1] += 1
+            if s.stop_work:
+                users.setdefault(s.stop_work.year, [0]*24)[s.stop_work.month-1+12] += 1
+        role = User.LEVELS
+        # import ipdb;ipdb.set_trace()
 
         return dict(
-            # today=today,
-            # year_start=year_start,
-            pivot=pivot_q,
-            # roles=role,
-            # quarters_sum=self._quarters_sum,
+            start=users,
+            roles=role,
+            check=check_role,
+            quarters_sum=self._quarters_sum,
         )
