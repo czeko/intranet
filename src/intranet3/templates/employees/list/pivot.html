@@ -20,7 +20,7 @@
 
 {% endblock %}
 {% block body %}
-<div id="clients_pivot">
+<div id="clients_pivot" ng-app ng-controller="pivotCtrl">
         <div class="role_select">
             <label>{% trans %}Role{% endtrans %}</label>
             <select id="roleselect">
@@ -71,19 +71,19 @@
                         {% set quarters = quarters_sum(s) %}
                         <td class="current_year">{{ year }}</td>
                         <td class="annually_hours">
-                            <a href="/user/list?year={{year}}&role={{check}}">{{ s[:12] | sum }}</a>
-                            <a href="/user/list?year={{year}}&role={{check}}&stop=1">({{ s[12:] | sum }})</a>
+                            <a href="/user/list#/?year_start={{year}}/01/01&role={{check}}">{{ s[:12] | sum }}</a>
+                            <a href="/user/list#/?year_stop={{year}}/12/31&role={{check}}" class="stop_work">({{ s[12:] | sum }})</a>
                         </td>
                         {% for q in range(4) %}
                             <td class="quarter">
-                                <a href="/user/list?year={{year}}&role={{check}}&q={{q+1}}">{{ quarters[q] }}</a>
-                                <a href="/user/list?year={{year}}&role={{check}}&stop=1&q={{q+1}}">({{ quarters[q+4] }})</a>
+                                <a href="/user/list#/?quater_start={{year}}&role={{check}}&q={{q+1}}">{{ quarters[q] }}</a>
+                                <a href="/user/list#/?quater_stop={{year}}&role={{check}}&q={{q+1}}" class="stop_work">({{ quarters[q+4] }})</a>
                             </td>
                         {% endfor %}
                         {% for month in range(12) %}
                                 <td class="month" id="{{year}}/{{month}}">
-                                    <a href="/user/list?year={{year}}&month={{month+1}}&role={{check}}">{{ s[month] }}</a>
-                                    <a href="/user/list?year={{year}}&month={{month+1}}&role={{check}}&stop=1">({{ s[month+12] }})</a>
+                                    <a href="/user/list#/?month_start={{year}}&month={{month+1}}&role={{check}}">{{ s[month] }}</a>
+                                    <a href="/user/list#/?month_stop={{year}}&month={{month+1}}&role={{check}}" class="stop_work">({{ s[month+12] }})</a>
                                 </td>
                         {% endfor %}
                     </tr>

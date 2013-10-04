@@ -1,6 +1,7 @@
 App = angular.module('intranet');
 
-App.controller('usersCtrl', function($scope, $http, $dialog, $timeout) {
+App.controller('usersCtrl', function($scope, $http, $dialog, $timeout, $location) {
+    $scope.location = $location;
     $scope.users = [];
     $scope.tab = 'employees';
     $scope.search = {
@@ -11,7 +12,16 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout) {
       roles: [],
       teams: []
     };
+    $scope.$watch('location.search()', function() {
+        if (($location.search()).role || ($location.search()).role=="None"){
+            $scope.search.roles = [($location.search()).role];
+        }
+        else if (($location.search()).year_start){
+            $scope.search.start_work = Date.parse(($location.search()).year_start);
 
+            debugger;
+        }
+    }, true);
     $scope.locations = [
         {
             id:'poznan',
@@ -95,13 +105,13 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout) {
       filtered_users = _.filter(filtered_users, function(user){
         var f_start_work = Date.parse($scope.search.start_work);
         var u_start_work = Date.parse(user.start_work);
-        return !f_start_work || !u_start_work || (start = u_start_work >= f_start_work);
+        return !f_start_work || !u_start_work || (start = u_start_work <= f_start_work);
       });
 
       filtered_users = _.filter(filtered_users, function(user){
         var f_stop_work = Date.parse($scope.search.stop_work);
         var u_stop_work = Date.parse(user.stop_work);
-        return !f_stop_work || !u_stop_work || u_stop_work <= f_stop_work;
+        return !f_stop_work || !u_stop_work || u_stop_work >= f_stop_work;
       });
 
       return filtered_users;
