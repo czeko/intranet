@@ -12,14 +12,42 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout, $location
       roles: [],
       teams: []
     };
+    $scope.aditional_stop=null;
+    $scope.aditional_start=null;
     $scope.$watch('location.search()', function() {
-        if (($location.search()).role || ($location.search()).role=="None"){
+        if (($location.search()).role){
             $scope.search.roles = [($location.search()).role];
         }
-        else if (($location.search()).year_start){
+        if (($location.search()).year_start){
             $scope.search.start_work = Date.parse(($location.search()).year_start);
-
+            $scope.aditional_start = Date.parse(($location.search()).year_start);
+            $scope.aditional_start.setFullYear($scope.aditional_start.getFullYear()+1);
+        }
+        if (($location.search()).quater_start){
+            $scope.search.start_work = Date.parse(($location.search()).quater_start);
+            $scope.aditional_start = Date.parse(($location.search()).quater_start);
+            $scope.aditional_start.setFullYear($scope.aditional_start.getFullYear(),$scope.aditional_start.getMonth()+3);
+        }
+        if (($location.search()).month_start){
+            $scope.search.start_work = Date.parse(($location.search()).month_start);
+            $scope.aditional_start = Date.parse(($location.search()).month_start);
+            $scope.aditional_start.setFullYear($scope.aditional_start.getFullYear(),$scope.aditional_start.getMonth()+1);
+        }
+        if (($location.search()).year_stop){
+            $scope.search.stop_work = Date.parse(($location.search()).year_stop);
+            $scope.aditional_stop = Date.parse(($location.search()).year_stop);
+            $scope.aditional_stop.setFullYear($scope.aditional_stop.getFullYear()+1);
+        }
+        if (($location.search()).quater_stop){
+            $scope.search.stop_work = Date.parse(($location.search()).quater_stop);
+            $scope.aditional_stop = Date.parse(($location.search()).quater_stop);
+            $scope.aditional_stop.setFullYear($scope.aditional_stop.getFullYear(),$scope.aditional_stop.getMonth()+3);
+        }
+        if (($location.search()).month_stop){
             debugger;
+            $scope.search.stop_work = Date.parse(($location.search()).month_stop);
+            $scope.aditional_stop = Date.parse(($location.search()).month_stop);
+            $scope.aditional_stop.setFullYear($scope.aditional_stop.getFullYear(),$scope.aditional_stop.getMonth()+1);
         }
     }, true);
     $scope.locations = [
@@ -105,13 +133,23 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout, $location
       filtered_users = _.filter(filtered_users, function(user){
         var f_start_work = Date.parse($scope.search.start_work);
         var u_start_work = Date.parse(user.start_work);
-        return !f_start_work || !u_start_work || (start = u_start_work <= f_start_work);
+        return !f_start_work || !u_start_work || (start = u_start_work >= f_start_work);
       });
 
       filtered_users = _.filter(filtered_users, function(user){
         var f_stop_work = Date.parse($scope.search.stop_work);
         var u_stop_work = Date.parse(user.stop_work);
         return !f_stop_work || !u_stop_work || u_stop_work >= f_stop_work;
+      });
+
+      filtered_users = _.filter(filtered_users, function(user){
+        var u_start_work = Date.parse(user.start_work);
+        return !$scope.aditional_start || u_start_work < $scope.aditional_start;
+      });
+
+        filtered_users = _.filter(filtered_users, function(user){
+        var u_stop_work = Date.parse(user.stop_work);
+        return !$scope.aditional_stop || u_stop_work < $scope.aditional_stop;
       });
 
       return filtered_users;
