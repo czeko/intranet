@@ -103,7 +103,7 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout, $location
 
     $scope.filtered_users = function(){
       var filtered_users = $scope.users;
-
+        debugger;
       filtered_users = _.filter(filtered_users, function(user){
         var f_name = $scope.search.name.toLowerCase();
         var u_name = user.name.toLowerCase();
@@ -133,23 +133,23 @@ App.controller('usersCtrl', function($scope, $http, $dialog, $timeout, $location
       filtered_users = _.filter(filtered_users, function(user){
         var f_start_work = Date.parse($scope.search.start_work);
         var u_start_work = Date.parse(user.start_work);
-        return !f_start_work || !u_start_work || (start = u_start_work >= f_start_work);
+        return !f_start_work  || !u_start_work || (start = u_start_work >= f_start_work);
       });
 
       filtered_users = _.filter(filtered_users, function(user){
         var f_stop_work = Date.parse($scope.search.stop_work);
         var u_stop_work = Date.parse(user.stop_work);
-        return !f_stop_work || !u_stop_work || u_stop_work >= f_stop_work;
+        return !f_stop_work || u_stop_work >= f_stop_work;
       });
 
       filtered_users = _.filter(filtered_users, function(user){
         var u_start_work = Date.parse(user.start_work);
-        return !$scope.aditional_start || u_start_work < $scope.aditional_start;
+        return !$scope.search.start_work || !$scope.aditional_start || u_start_work < $scope.aditional_start;
       });
 
         filtered_users = _.filter(filtered_users, function(user){
         var u_stop_work = Date.parse(user.stop_work);
-        return !$scope.aditional_stop || u_stop_work < $scope.aditional_stop;
+        return !$scope.search.stop_work || !$scope.aditional_stop || u_stop_work < $scope.aditional_stop;
       });
 
       return filtered_users;

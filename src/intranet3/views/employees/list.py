@@ -206,10 +206,12 @@ class Pivot(ApplyArgsMixin, BaseView):
         if not check_role or check_role == 'None':
             pivot_q = self.session.query(User.id, User.name, User.start_work, User.stop_work, User.roles)\
                                 .filter(User.is_not_client())\
+                                .filter(User.is_active==True)\
                                 .order_by(User.name)
         else:
             pivot_q = self.session.query(User.id, User.name, User.start_work, User.stop_work, User.roles)\
                                 .filter(User.is_not_client())\
+                                .filter(User.is_active==True)\
                                 .filter(User.roles.op('&&')('{%s}'%(check_role)))\
                                 .order_by(User.name)
 
@@ -220,7 +222,6 @@ class Pivot(ApplyArgsMixin, BaseView):
             if s.stop_work:
                 users.setdefault(s.stop_work.year, [0]*24)[s.stop_work.month-1+12] += 1
         role = User.LEVELS
-        # import ipdb;ipdb.set_trace()
 
         return dict(
             start=users,

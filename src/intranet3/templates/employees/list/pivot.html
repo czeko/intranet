@@ -5,16 +5,15 @@
     <script>
         (function($) {
             $(function(){
+                debugger;
                 $('#roleoption-{{check}}').attr("selected", "selected");
                 $('#roleselect').change(function (){
                     debugger;
-                    var year = $(this).val();
-                    window.location = '{{ request.url_for("/employees/list/pivot")}}?role='+year;
+                    var role = $(this).val();
+                    window.location = '{{ request.url_for("/employees/list/pivot")}}?role='+role;
                 });
             });
         })(jQuery);
-
-
     </script>
 
 
@@ -29,7 +28,6 @@
                     <option id="roleoption-{{ role[0] }}" value="{{role[0]}}">{{ role[1] }}</option>
                 {% endfor %}
             </select>
-
         </div>
         <div class="clear"></div>
         <div class="row-fluid">
@@ -88,7 +86,6 @@
                         {% endfor %}
                     </tr>
                 {% endfor %}
-
                 </tbody>
                 </table>
             </div>
